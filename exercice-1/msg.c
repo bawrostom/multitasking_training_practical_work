@@ -25,6 +25,7 @@ void messageAdd(volatile MSG_BLOCK* src, volatile MSG_BLOCK* add){
 */
 unsigned int messageCheck(volatile MSG_BLOCK* mBlock){
 	unsigned int i, tcheck=0;
+	printf("The checksum inside messageCheck: %d \n", mBlock->checksum);
 	for(i=0;i < DATA_SIZE;i++)
 		tcheck ^= mBlock->mData[i];
 	if(tcheck == mBlock->checksum){

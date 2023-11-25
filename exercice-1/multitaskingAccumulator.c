@@ -18,12 +18,12 @@ int main( void )
 	printf("[multitaskingAccumulator]Software initialization in progress...\n");	
 	acquisitionManagerInit();
 	messageAdderInit();
-	displayManagerInit();
+	//displayManagerInit();
 	printf("[multitaskingAccumulator]Task initialization done.\n");
 	
 	printf("[multitaskingAccumulator]Scheduling in progress...\n");
 
-	displayManagerJoin();
+	//displayManagerJoin();
 	messageAdderJoin();
 	acquisitionManagerJoin();
 

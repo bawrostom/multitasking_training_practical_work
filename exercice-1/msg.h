@@ -23,6 +23,7 @@ unsigned int messageCheck(volatile MSG_BLOCK* mBlock);
 * @param src the message pointer
 * @param add the message to add
 */
+
 void messageAdd(volatile MSG_BLOCK* src, volatile MSG_BLOCK* add);
 
 #endif

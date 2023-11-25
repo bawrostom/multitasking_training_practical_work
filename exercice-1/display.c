@@ -7,10 +7,10 @@ void messageDisplay(volatile MSG_BLOCK* mBlock){
 	unsigned int i; 
 	messageCheck(mBlock);
 	printf("Message\n");
-	D(printf("["));
+	/*printf("[");
 	for(i=0;i < DATA_SIZE;i++)
-		D(printf("%u ",mBlock->mData[i]));
-	D(printf("]\n"));
+		printf("%u ",mBlock->mData[i]);
+	printf("]\n");*/
 }
 
 void print(unsigned int producedCount, unsigned int consumedCount){
