@@ -20,6 +20,12 @@ volatile MSG_BLOCK in;
 //Consumer count storage
 volatile unsigned int consumeCount = 0;
 
+
+
+
+
+
+
 /**
  * Increments the consume count.
  */
@@ -52,6 +58,7 @@ void messageAdderInit(void){
 	if (pthread_create(&consumer, NULL, &sum, NULL)!=0){
 		perror("Failed to create consumer thread");
 	}
+
 }
 
 void messageAdderJoin(void){
@@ -74,13 +81,16 @@ static void *sum( void *parameters )
 		}else{
 			//at each 4 messages we reinitialize the accumulator
 			if (i % 4 == 0){
-				messageAdderInit();
+			for (size_t i = 0; i < DATA_SIZE; i++){
+				out.mData[i] = 0;
+			}
 				messageAdd(&out, &in);
 			}else{
 				messageAdd(&out, &in);
 			}
 			incrementConsumeCount();
 		}
+		printf("Second round\n");
 	}
 	printf("[messageAdder] %d termination\n", gettid());
 	//TODO

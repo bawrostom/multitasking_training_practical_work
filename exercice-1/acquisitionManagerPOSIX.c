@@ -22,7 +22,6 @@ volatile unsigned int produceCount = 0;
 pthread_t producers[PRODUCER_COUNT];
 //storage buffer
 unsigned int buffer[256];
-
 static void *produce(void *params);
 
 /**
@@ -35,6 +34,7 @@ pthread_mutex_t mux;
 //Semaphore
 sem_t buffEmpty;
 sem_t buffFull;
+sem_t disp;
 
 
 unsigned int check;
@@ -45,15 +45,15 @@ unsigned int check;
 
 
 static unsigned int createSynchronizationObjects(void);
-
 /*
 * Increments the produce count.
 */
 static void incrementProducedCount(void);
 
 static unsigned int createSynchronizationObjects(void)
+
 {
-	if (sem_init(&buffEmpty, 0, 1) == -1 || sem_init(&buffFull, 0, 0) == -1){
+	if (sem_init(&buffEmpty, 0, 1) == -1 || sem_init(&buffFull, 0, 0) == -1 || (sem_init(&disp, 0, 1) == -1)){
 		perror("Semaphore not created");
 		return ERROR_INIT;
 		}
@@ -84,27 +84,46 @@ void mutex_unlock(){
 	pthread_mutex_unlock(&mux);
 }
 
-void sem_w(sem_t sem){
-	sem_wait(&sem);
+
+void sem_wait_buffEmpty(){
+	sem_wait(&buffEmpty);
 }
 
-void sem_p(sem_t sem){
-	sem_post(&sem);
+void sem_post_buffEmpty(){
+	sem_post(&buffEmpty);
 }
+
+void sem_wait_buffFull(){
+	sem_wait(&buffFull);
+}
+
+void sem_post_buffFull(){
+	sem_post(&buffFull);
+}
+
+void sem_post_disp(){
+	sem_post(&disp);
+}
+
+void sem_wait_disp(){
+	sem_wait(&disp);
+}
+
 
 
 MSG_BLOCK getMessage(void){
 	MSG_BLOCK m;
-	printf("getting message \n");
-	sem_wait(&buffFull);
-	mutex_lock();
+	m.checksum = 0;
+	printf("getting message %d \n");
+	sem_wait_buffFull();
+	//mutex_lock();
 	for (int i=0;i<DATA_SIZE;i++){
 		m.mData[i] = buffer[i];
 		m.checksum ^= m.mData[i];
 	} 
-	printf("checksum: %d \n", check);
-	mutex_unlock();
-	sem_post(&buffEmpty);
+	printf("Consumer id %d   Consuming message \n", gettid());
+	//mutex_unlock();
+	sem_post_buffEmpty();
 	return m;
 }
 
@@ -147,6 +166,8 @@ void acquisitionManagerJoin(void)
 
 	sem_destroy(&buffFull);
 	sem_destroy(&buffEmpty);
+	sem_destroy(&disp);
+	pthread_mutex_destroy(&mux);
 	printf("[acquisitionManager]Semaphore cleaned\n");
 }
 
@@ -155,16 +176,17 @@ void *produce(void* params)
 	printf("[acquisitionManager]Producer created with id %d\n", gettid());
 	unsigned int i = 0;
 	MSG_BLOCK m;
+	int r = 0;
 	while (i < PRODUCER_LOOP_LIMIT)
 	{
 		i++;
 		sleep(PRODUCER_SLEEP_TIME+(rand() % 5));
-
-		sem_wait(&buffEmpty);
-		mutex_lock();
+		sem_wait_buffEmpty();
+		sem_wait_disp();
+		//mutex_lock();
 
 		//read the input message
-		getInput(i,&m);
+		getInput(r,&m);
 
 		//check the intigrity
 		if (messageCheck(&m) == 0){
@@ -172,18 +194,14 @@ void *produce(void* params)
 		}
 		//copy to buffer
 		else{
-		for (i=0;i<255;i++){
-			buffer[i]=m.mData[i];
+		for (int j=0;j<DATA_SIZE;j++){
+			buffer[j]=m.mData[j];
 			}
-		check = m.checksum;
-		printf("in prod checksum: %d \n", m.checksum);
 		incrementProducedCount();
 		}
-		mutex_unlock();
- 		sem_post(&buffFull);
- 		int value;
-    	sem_getvalue(&buffFull, &value); // Retrieve the value of the semaphore
-    	printf("Semaphore full value: %d \n", value);
+		printf("Producer %d produced message %d \n",gettid(), i);
+		//mutex_unlock();
+ 		sem_post_buffFull();
 	}
 
 	printf("[acquisitionManager] %d termination\n", gettid());

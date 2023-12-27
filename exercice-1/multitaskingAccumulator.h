@@ -15,7 +15,7 @@
 //The number of second the display shall sleep
 #define DISPLAY_SLEEP_TIME  3
 //The number display iterations
-#define DISPLAY_LOOP_LIMIT  2
+#define DISPLAY_LOOP_LIMIT  PRODUCER_LOOP_LIMIT * PRODUCER_COUNT * PRODUCER_SLEEP_TIME
 //The number of second the adder shall sleep
 #define ADDER_SLEEP_TIME    2
 //The number adder iterations

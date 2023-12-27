@@ -8,6 +8,9 @@
 */
 MSG_BLOCK getCurrentSum();
 
+
+
+
 /**
 * Get the number of consumed messages.
 */

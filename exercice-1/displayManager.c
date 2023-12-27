@@ -37,16 +37,20 @@ void displayManagerJoin(void){
 static void *display( void *parameters )
 {
 	printf("[displayManager]Thread created for display with id %d\n", gettid());
-	unsigned int diffCount = 0;
-	while(diffCount < DISPLAY_LOOP_LIMIT){
+	unsigned int diffCount = 1;
+	unsigned int produced = 0;
+	unsigned int consumed;
+	unsigned int msg;
+	MSG_BLOCK m;
+	while(produced < DISPLAY_LOOP_LIMIT){
 		sleep(DISPLAY_SLEEP_TIME);
-		MSG_BLOCK m = getCurrentSum();
+		m = getCurrentSum();
 		messageDisplay(&m);
-		unsigned int produced = getProducedCount();
-		unsigned int consumed = getConsumedCount();
-		diffCount = consumed - produced;
+		produced = getProducedCount();
+		consumed = getConsumedCount();
+		diffCount = produced - consumed;
 		print(produced, consumed);
-
+		sem_post_disp();
 	}
 	printf("[displayManager] %d termination\n", gettid());
    //TODO
